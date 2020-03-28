@@ -1,4 +1,4 @@
-package com.example.photogallery2;
+package com.example.photogalleryproject2;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;

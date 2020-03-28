@@ -22,7 +22,7 @@ public class Utils2
     {
         File f = null;
         if(s.contains("captions"))
-            f = c.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);  
+            f = c.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
         else if(s.contains("dates"))
             f = c.getExternalFilesDir(Environment.DIRECTORY_MUSIC);
         else

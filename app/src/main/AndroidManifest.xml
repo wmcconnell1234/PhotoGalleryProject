@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.photogallery2">
+    package="com.example.photogalleryproject2">
 
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -36,7 +36,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.example.photogallery2.fileprovider"
+            android:authorities="com.example.photogalleryproject2.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

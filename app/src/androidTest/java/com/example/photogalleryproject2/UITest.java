@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.photogallery2;
+package com.example.photogalleryproject2;
 
 import android.app.Activity;
 

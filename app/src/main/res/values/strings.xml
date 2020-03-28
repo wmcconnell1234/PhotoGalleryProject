@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">photogallery2</string>
+    <string name="app_name">photogalleryproject2</string>
     <string name="edit_caption">Enter a captioin</string>
     <string name="edit_startingtime">From</string>
     <string name="edit_endingtime">To</string>

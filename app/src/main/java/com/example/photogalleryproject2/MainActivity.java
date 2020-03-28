@@ -6,7 +6,7 @@
 //- take a picture using this app
 //If a picture does not have the GPS info in the Exif Tags, "no location info" is displayed
 
-package com.example.photogallery2;
+package com.example.photogalleryproject2;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 import android.content.Intent;
@@ -53,11 +53,11 @@ public class MainActivity extends AppCompatActivity
     //Master lists. These are used to keep track of all files, captions, and dates.
     private List captionListM = new ArrayList();
     private List filenameListM = new ArrayList();
-    private List dateListM = new ArrayList<Date>();
+    private List dateListM = new ArrayList(); ////<Date>(); //WM
     //Filtered lists. These are used to keep track of which content is to be displayed.
     private List captionListF = new ArrayList();
     private List filenameListF = new ArrayList();
-    private List dateListF = new ArrayList<Date>();
+    private List dateListF = new ArrayList(); /////<Date>(); //WM
     //The element number of the current image. Refers to the element number in the FILTERED list.
     private int currentElement = 0;
     //Instantiate the utility classes that provide helpful functions for this app
@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity
 
     private List populateGallery() {         // getting photos from storage on phone, put them in to the photo gallery
         File file = new File(Environment.getExternalStorageDirectory()
-                .getAbsolutePath(), "/Android/data/com.example.photogallery2/files/Pictures"); // put in our project name then it should work
+                .getAbsolutePath(), "/Android/data/com.example.photogalleryproject2/files/Pictures"); // put in our project name then it should work
         File[] fList = file.listFiles();
         List fl = new ArrayList();
         if (fList != null) {
@@ -99,8 +99,8 @@ public class MainActivity extends AppCompatActivity
         //On first run, create files to save captions and dates. Also get the filenames.
         File captionFile = U.GetFile(MainActivity.this, "captions");
         File dateFile = U.GetFile(MainActivity.this, "dates");
-        //Populate master lists from files at startup of this activity 
-        filenameListM = populateGallery();       
+        //Populate master lists from files at startup of this activity
+        filenameListM = populateGallery();
         captionListM = U.PopulateList(captionFile);
         dateListM = U.PopulateList(dateFile);
         //Clear filters
@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity
         //Go to the first picture, if there is one
         if (filenameListF.size() > 0)
             Go(0);
-        //Else, go to blank screen
+            //Else, go to blank screen
         else
             Go(BLANK_SCREEN);
         //Hide upload status initially
@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
-                Uri photoURI = FileProvider.getUriForFile(this, "com.example.photogallery2.fileprovider", photoFile);
+                Uri photoURI = FileProvider.getUriForFile(this, "com.example.photogalleryproject2.fileprovider", photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
             }
@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity
             //Update master lists with the new picture
             filenameListM.add(currentFileName);
             captionListM.add("Enter Caption");
-            dateListM.add(CurrentDate);
+            dateListM.add(CurrentDate.toString());           ////CurrentDate); //WM
             //Write master caption and date lists to files
             U.SaveToFile(MainActivity.this, captionListM, "captions");
             U.SaveToFile(MainActivity.this, dateListM, "dates");
@@ -209,7 +209,7 @@ public class MainActivity extends AppCompatActivity
             Button button = findViewById(R.id.btnSnap);
             if(get_caption.isEmpty())
                 button.setClickable(true);
-            //Otherwise disable the snap button. To prevent crashes
+                //Otherwise disable the snap button. To prevent crashes
             else
                 button.setClickable(false);
             //If the search returned something, go to the first image in the filtered list
@@ -276,6 +276,59 @@ public class MainActivity extends AppCompatActivity
     }
     //============================================================================================================================
 
+    public void Delete(View view)
+    {
+        //Only delete if there's at least one picture
+        if(filenameListF.size() > 0)
+        {
+            //1. Delete current picture from the file system
+            File f = new File(
+                    getExternalFilesDir(Environment.DIRECTORY_PICTURES) + "/" + filenameListF.get(currentElement).toString());
+            f.delete();
+            //2. Delete current picture from master filename list
+            String s = filenameListF.get(currentElement).toString();
+            int i = filenameListM.indexOf(s);
+            filenameListM.remove(i);
+            //3. Delete current picture from master caption list
+            s = captionListF.get(currentElement).toString();
+            i = captionListM.indexOf(s);
+            captionListM.remove(i);
+            //4. Delete current picture from master date list
+            //Date d = new Date();
+            /*d*/
+            s = dateListF.get(currentElement).toString();
+            i = dateListM.indexOf(/*d*/s);
+            dateListM.remove(i);
+            //5. Delete current picture from filtered filename list
+            filenameListF.remove(currentElement);
+            //6. Delete current picture from filtered caption list
+            captionListF.remove(currentElement);
+            //7. Delete current picture from filtered date list
+            dateListF.remove(currentElement);
+            //8. Delete current picture from the caption file
+            U.SaveToFile(MainActivity.this, captionListM, "captions");
+            //9. Delete current picture from the date file
+            U.SaveToFile(MainActivity.this, dateListM, "dates");
+            //10. Go to a different picture, or a blank screen if no pictures left
+            if (filenameListF.size() == 0)
+            {
+                //Don't worry about currentElement, it will get set correctly when a picture is taken.
+                Go(BLANK_SCREEN);
+            }
+            else if (currentElement >= filenameListF.size())
+            {
+                currentElement--;
+                Go(currentElement);
+            }
+            else
+            {
+                //currentElement is in bounds so leave it as is
+                Go(currentElement);
+            }
+        }//end if
+    }//end Delete
+    //============================================================================================================================
+
     //Goes to the specified element in the filtered list. -1 means go to blank screen.
     public void Go(int element)
     {
@@ -309,7 +362,7 @@ public class MainActivity extends AppCompatActivity
             else
                 tv.setText("No location information");
         }
-		// 
+        //
         else //Go to blank screen
         {
             //1. There is no current element so leave currentElement as is
@@ -335,9 +388,9 @@ public class MainActivity extends AppCompatActivity
     public void Share(View view)
     {
         File file = new File(Environment.getExternalStorageDirectory()
-                .getAbsolutePath(), "/Android/data/com.example.photogallery2/files/Pictures"); // put in our project name then it should work
+                .getAbsolutePath(), "/Android/data/com.example.photogalleryproject2/files/Pictures"); // put in our project name then it should work
 
-        String photoname = "/storage/emulated/0/Android/data/com.example.photogallery2/files/Pictures/" + filenameListF.get(currentElement).toString();
+        String photoname = "/storage/emulated/0/Android/data/com.example.photogalleryproject2/files/Pictures/" + filenameListF.get(currentElement).toString();
 
         Uri share_photoURI = Uri.parse(photoname);
 

@@ -112,7 +112,7 @@ public class SearchUtil
                 parsepos.setIndex(0);
                 if (d1.compareTo(dStartTime) > 0 && d1.compareTo(dEndTime) < 0) {
 
-				// I was not sure how to access the location data inside this function, so i copied the method in main activity and
+                    // I was not sure how to access the location data inside this function, so i copied the method in main activity and
                     // put below. The difference is that the string filename is "+fwm.getName();"
                     // instead of "filenameListF.get(currentElement).toString();"       IL
 
@@ -147,8 +147,8 @@ public class SearchUtil
                     //      filenameListF.add(fwm.getName()); // if both condition above met (that image file is within user search criteria, add it to the list
                     //      captionListF.add(captionListM.get(cap_index).toString());
                     //      dateListF.add(dateListM.get(cap_index).toString());
-					// We don't need a location list then?, just write a logical that only 
-					// increase the filename, caption, and data list of those picutre that are within the geo location IL.
+                    // We don't need a location list then?, just write a logical that only
+                    // increase the filename, caption, and data list of those picutre that are within the geo location IL.
                 }
             }
             cap_index++;
