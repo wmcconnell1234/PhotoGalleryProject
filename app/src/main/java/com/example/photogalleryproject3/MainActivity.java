@@ -6,7 +6,7 @@
 //- take a picture using this app
 //If a picture does not have the GPS info in the Exif Tags, "no location info" is displayed
 
-package com.example.photogalleryproject2;
+package com.example.photogalleryproject3;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 import android.content.Intent;
@@ -42,6 +42,8 @@ public class MainActivity extends AppCompatActivity
     private HttpURLConnection urlConnection;
     public static final int REQUEST_IMAGE_CAPTURE = 1;
     public static final int SEARCH_ACTIVITY_REQUEST_CODE = 0;
+    public static final int VIEW_FOLDER_REQUEST_CODE = 2;
+    public static final int ADD_TO_FOLDER_REQUEST_CODE = 3;
     private static final int BLANK_SCREEN = -1; //used with Go() function to tell it to go to a blank screen
     /////////////////////////////////////IL
     private String returnStartTime;     // 2 global variables that stores the time from 2nd activity
@@ -58,6 +60,8 @@ public class MainActivity extends AppCompatActivity
     private List captionListF = new ArrayList();
     private List filenameListF = new ArrayList();
     private List dateListF = new ArrayList(); /////<Date>(); //WM
+    //Folder List.
+    private List folderList = new ArrayList();
     //The element number of the current image. Refers to the element number in the FILTERED list.
     private int currentElement = 0;
     //Instantiate the utility classes that provide helpful functions for this app
@@ -73,7 +77,7 @@ public class MainActivity extends AppCompatActivity
 
     private List populateGallery() {         // getting photos from storage on phone, put them in to the photo gallery
         File file = new File(Environment.getExternalStorageDirectory()
-                .getAbsolutePath(), "/Android/data/com.example.photogalleryproject2/files/Pictures"); // put in our project name then it should work
+                .getAbsolutePath(), "/Android/data/com.example.photogalleryproject3/files/Pictures"); // put in our project name then it should work
         File[] fList = file.listFiles();
         List fl = new ArrayList();
         if (fList != null) {
@@ -116,6 +120,16 @@ public class MainActivity extends AppCompatActivity
         //Hide upload status initially
         TextView textViewUpload = (TextView) findViewById(R.id.textViewUpload);
         textViewUpload.setText("");
+        //Initialize Folder List
+        List temp1 = new ArrayList();
+        List temp2 = new ArrayList();
+        List temp3 = new ArrayList();
+        temp1.add("Folder 1"); //The first element in each sublist will be the folder name. The rest will be the filenames
+        temp2.add("Folder 2");
+        temp3.add("Folder 3");
+        folderList.add(temp1); //Folder 1
+        folderList.add(temp2); //Folder 2
+        folderList.add(temp3); //Folder 3
     }
     //============================================================================================================================
 
@@ -137,7 +151,7 @@ public class MainActivity extends AppCompatActivity
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
-                Uri photoURI = FileProvider.getUriForFile(this, "com.example.photogalleryproject2.fileprovider", photoFile);
+                Uri photoURI = FileProvider.getUriForFile(this, "com.example.photogalleryproject3.fileprovider", photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
             }
@@ -218,8 +232,93 @@ public class MainActivity extends AppCompatActivity
             else //go to a blank screen
                 Go(BLANK_SCREEN);
         }//end do this if user searched
+
+        //Do this if user pressed "Folders" to view a folder
+        if (requestCode == VIEW_FOLDER_REQUEST_CODE && resultCode == RESULT_OK)
+        {
+            //If the folder that was chosen is "All" then just clear the filters
+            String folderName = data.getStringExtra("FOLDER");
+            if(folderName.equals("All"))
+            {
+                filenameListF = U.copy(filenameListM);
+                captionListF = U.copy(captionListM);
+                dateListF = U.copy(dateListM);
+            }
+            else
+            {
+                //Navigate to the folder that was chosen
+                String folderNameRead = "null";
+                int index;
+                for (index = 0; index < folderList.size() && !folderNameRead.equals(folderName); index++)
+                    folderNameRead = ((ArrayList) folderList.get(index)).get(0).toString();
+                index--; //I assume there is at least one folder.
+                List currentFolder = new ArrayList();
+                currentFolder = (ArrayList) folderList.get(index);
+
+                //Set filtered lists to the files in that folder
+                filenameListF.clear();
+                captionListF.clear();
+                dateListF.clear();
+                for (int i = 1; i < currentFolder.size(); i++) {
+                    //Filename
+                    String filename = currentFolder.get(i).toString();
+                    filenameListF.add(filename);
+
+                    //Preparatory work for date and caption (determine current file index in master lists)
+                    String fileNameRead = "null";
+                    int fileIndex;
+                    for (fileIndex = 0; fileIndex < filenameListM.size() && !fileNameRead.equals(filename); fileIndex++)
+                        fileNameRead = filenameListM.get(fileIndex).toString();
+                    fileIndex--;
+
+                    //Caption
+                    String caption = captionListM.get(fileIndex).toString();
+                    captionListF.add(caption);
+
+                    //Date
+                    String date = dateListM.get(fileIndex).toString();
+                    dateListF.add(date);
+                }
+            }//end else
+
+            //Go to the first picture, if any, in that folder
+            if(filenameListF.size() > 0)
+            {
+                currentElement = 0;
+                Go(currentElement);
+            }
+            else
+                Go(BLANK_SCREEN);
+        }//end "do this if user pressed "Folders"
+
+        //Do this if user pressed "Add to Folder" to add the picture to a folder
+        if (requestCode == ADD_TO_FOLDER_REQUEST_CODE && resultCode == RESULT_OK)
+        {
+            //Get filename of picture to add, and folder name of folder to add it to
+            String filename = filenameListF.get(currentElement).toString();
+            String folderName = data.getStringExtra("FOLDER");
+
+            //Only if the user didn't choose "All"!!!
+            if(!folderName.equals("All"))
+                DoAddToFolder(filename, folderName);
+        }//end "do this if user pressed "Add to Folder"
     }
     //============================================================================================================================
+
+    //Function to simplify adding a picture to a folder.
+    private void DoAddToFolder(String filename, String foldername)
+    {
+        //Navigate to the folder that was chosen
+        String folderNameRead = "null";
+        int index;
+        for (index = 0; index < folderList.size() && !folderNameRead.equals(foldername); index++)
+            folderNameRead = ((ArrayList)folderList.get(index)).get(0/*Folder name*/).toString();
+        index--; //I assume there is at least one folder.
+
+        //Add the current picture to the folder
+        ((ArrayList)folderList.get(index)).add(filename);
+    }
+    //=============================================================================================================================
 
     public void saveCaption(View view)
     {
@@ -281,6 +380,20 @@ public class MainActivity extends AppCompatActivity
         //Only delete if there's at least one picture
         if(filenameListF.size() > 0)
         {
+            //0. Delete current picture from all folders that it's in
+            for(int i = 0; i < folderList.size(); i++)
+            {
+                int size = ((ArrayList)folderList.get(i)).size();
+                for(int j = 1; j < size; j++)
+                {
+                    if(((ArrayList)folderList.get(i)).get(j).toString().equals(filenameListF.get(currentElement).toString()))
+                    {
+                        ((ArrayList) folderList.get(i)).remove(j);
+                        size--;
+                        j--;
+                    }
+                }
+            }
             //1. Delete current picture from the file system
             File f = new File(
                     getExternalFilesDir(Environment.DIRECTORY_PICTURES) + "/" + filenameListF.get(currentElement).toString());
@@ -294,10 +407,8 @@ public class MainActivity extends AppCompatActivity
             i = captionListM.indexOf(s);
             captionListM.remove(i);
             //4. Delete current picture from master date list
-            //Date d = new Date();
-            /*d*/
             s = dateListF.get(currentElement).toString();
-            i = dateListM.indexOf(/*d*/s);
+            i = dateListM.indexOf(s);
             dateListM.remove(i);
             //5. Delete current picture from filtered filename list
             filenameListF.remove(currentElement);
@@ -327,6 +438,24 @@ public class MainActivity extends AppCompatActivity
             }
         }//end if
     }//end Delete
+    //============================================================================================================================
+
+    public void ViewFolder(View view)
+    {
+        Intent intent = new Intent(this, Folder.class);
+        startActivityForResult(intent, VIEW_FOLDER_REQUEST_CODE);
+    }
+    //============================================================================================================================
+
+    public void AddToFolder(View view)
+    {
+        //Only if there is a current picture!
+        if(filenameListF.size() > 0)
+        {
+            Intent intent = new Intent(this, Folder.class);
+            startActivityForResult(intent, ADD_TO_FOLDER_REQUEST_CODE);
+        }
+    }
     //============================================================================================================================
 
     //Goes to the specified element in the filtered list. -1 means go to blank screen.
@@ -388,9 +517,9 @@ public class MainActivity extends AppCompatActivity
     public void Share(View view)
     {
         File file = new File(Environment.getExternalStorageDirectory()
-                .getAbsolutePath(), "/Android/data/com.example.photogalleryproject2/files/Pictures"); // put in our project name then it should work
+                .getAbsolutePath(), "/Android/data/com.example.photogalleryproject3/files/Pictures"); // put in our project name then it should work
 
-        String photoname = "/storage/emulated/0/Android/data/com.example.photogalleryproject2/files/Pictures/" + filenameListF.get(currentElement).toString();
+        String photoname = "/storage/emulated/0/Android/data/com.example.photogalleryproject3/files/Pictures/" + filenameListF.get(currentElement).toString();
 
         Uri share_photoURI = Uri.parse(photoname);
 
@@ -567,4 +696,5 @@ public class MainActivity extends AppCompatActivity
     }
 
 }//end MainActivity
+
 

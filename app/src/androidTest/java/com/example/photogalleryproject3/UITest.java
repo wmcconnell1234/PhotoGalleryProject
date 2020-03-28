@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.photogalleryproject2;
+package com.example.photogalleryproject3;
 
 import android.app.Activity;
 
@@ -51,8 +51,8 @@ public class UITest {
     // * Use {@link ActivityScenarioRule} to create and launch the activity under test, and close it
     // * after test completes. This is a replacement for {@link androidx.test.rule.ActivityTestRule}.
     //*/
-    @Rule public ActivityScenarioRule<MainActivity> activityScenarioRule
-            = new ActivityScenarioRule<>(MainActivity.class);
+    @Rule public ActivityScenarioRule<com.example.photogalleryproject3.MainActivity> activityScenarioRule
+            = new ActivityScenarioRule<>(com.example.photogalleryproject3.MainActivity.class);
 
     @Test
     public void changeText_sameActivity() {

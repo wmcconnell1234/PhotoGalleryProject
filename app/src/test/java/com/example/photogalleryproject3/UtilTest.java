@@ -1,4 +1,4 @@
-package com.example.photogalleryproject2;
+package com.example.photogalleryproject3;
 import android.content.Context;
 import android.os.Environment;
 import org.junit.Test;
@@ -152,5 +152,3 @@ public class UtilTest
         assertEquals("Caption 2", l2.get(1));
     }
 }//end UtilTest
-
-
