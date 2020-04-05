@@ -9,8 +9,12 @@
 package com.example.photogalleryproject3;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
+
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -18,10 +22,17 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.vision.Frame;
+import com.google.android.gms.vision.face.Face;
+import com.google.android.gms.vision.face.FaceDetector;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -187,6 +198,20 @@ public class MainActivity extends AppCompatActivity
             //Write master caption and date lists to files
             U.SaveToFile(MainActivity.this, captionListM, "captions");
             U.SaveToFile(MainActivity.this, dateListM, "dates");
+
+
+            // add the photos with faces automatically into folder 1-------------IL
+
+            // -----------find out the number of face in each photo ------------------- IL
+            int x = faceRecognitionV2(mCurrentPhotoPath);
+            // ----------adding the photo into folder 1 ----------------------- IL
+            if (x>0)
+            {
+                DoAddToFolder(currentFileName, "Folder 1");
+
+            }
+
+
             //Clear filters
             filenameListF = U.copy(filenameListM);
             captionListF = U.copy(captionListM);
@@ -467,16 +492,25 @@ public class MainActivity extends AppCompatActivity
             currentElement = element;
             //2. Set the current filename to the filename of the given image
             mCurrentPhotoPath = getExternalFilesDir(Environment.DIRECTORY_PICTURES)+"/"+filenameListF.get(currentElement).toString();
-            //3. Display the given image
+
+            //3. Display the given image in the correction orientation --------- IL
             ImageView mImageView = (ImageView) findViewById(R.id.ivGallery);
-            mImageView.setImageBitmap(BitmapFactory.decodeFile(mCurrentPhotoPath));
+            mImageView.setImageBitmap(CorrectPhotoRotation(mCurrentPhotoPath));   // using the function that corrects the orientation IL
             //4. Set the caption to the caption of the given image
             TextView textView = (TextView) findViewById(R.id.editTextCaption);
             textView.setText((CharSequence) captionListF.get(currentElement));
             //5. Set the date to the date of the given image
             TextView textViewforDate = findViewById(R.id.DatetextView);
             textViewforDate.setText((CharSequence) dateListF.get(currentElement).toString());
-            //6. Set the location information to the location information of the given image
+
+            //6. Find out the number of faces in the photo--------------IL
+            //int x = faceRecognitionV2(mCurrentPhotoPath);
+            //7. -display the number of face detected if any. ----------------IL
+            //TextView textViewforFaceNum = findViewById(R.id.FaceNum_TextView);
+            //textViewforFaceNum.setText("number of face : " + String.valueOf(x));
+
+
+            //8 . Set the location information to the location information of the given image
             float[] f = {0,0};   // the two values are stored here temporaely, long, lat
             boolean result = false;
             try {
@@ -694,6 +728,86 @@ public class MainActivity extends AppCompatActivity
         try { urlConnection.disconnect(); } catch (Exception e){}
         super.onDestroy();
     }
+
+
+
+    // ----------------face recognition -------------------------- IL
+    private int faceRecognitionV2(String imagePath) {
+        // load image file to bitmap
+        BitmapFactory.Options bitmapFatoryOptions = new BitmapFactory.Options();
+        bitmapFatoryOptions.inPreferredConfig = Bitmap.Config.RGB_565;
+        Bitmap bitmap_image = CorrectPhotoRotation(imagePath);
+        // detect face
+        Context context = getApplicationContext();
+        FaceDetector detector = new FaceDetector.Builder(context)
+                .setTrackingEnabled(false)
+                .setLandmarkType(FaceDetector.ALL_LANDMARKS)
+                .build();
+        Frame frame = new Frame.Builder().setBitmap(bitmap_image).build();
+        SparseArray<Face> faces = detector.detect(frame);
+
+        return faces.size();
+        // faces.size();
+    }
+
+
+    // --------------------rotate photo --------------------------- IL
+    public static Bitmap rotateBitmap(Bitmap source, float angle) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(),
+                matrix, true);
+    }
+
+
+    // ---------------- determine the correction photo orientation and return the bitmap-----------IL
+    private Bitmap CorrectPhotoRotation(String photoPath)
+    {
+        int orientation = 0;
+        try {
+            ExifInterface ei = new ExifInterface(photoPath);
+            orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_UNDEFINED);
+        } catch (IOException ex) {
+
+            Toast.makeText(this, "Orientation detection failed", Toast.LENGTH_SHORT).show();
+            // Error occurred while creating the File
+        }
+
+        // load image file to bitmap
+        BitmapFactory.Options bitmapFatoryOptions = new BitmapFactory.Options();
+        bitmapFatoryOptions.inPreferredConfig = Bitmap.Config.RGB_565;
+        Bitmap bitmap = BitmapFactory.decodeFile(photoPath);
+
+
+
+        Bitmap rotatedBitmap = null;
+        switch(orientation) {
+
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                rotatedBitmap = rotateBitmap(bitmap, 90);
+                break;
+
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                rotatedBitmap = rotateBitmap(bitmap, 180);
+                break;
+
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                rotatedBitmap = rotateBitmap(bitmap, 270);
+                break;
+
+            case ExifInterface.ORIENTATION_NORMAL:
+            default:
+                rotatedBitmap = bitmap;
+        }
+
+        return rotatedBitmap;
+    }
+
+
+
+
+
 
 }//end MainActivity
 
