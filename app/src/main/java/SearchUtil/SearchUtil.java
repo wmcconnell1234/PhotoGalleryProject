@@ -137,9 +137,9 @@ public class SearchUtil
 
                     else     // if there is no location information for the image, add the pic in list anyways. (time and caption requirement are met). IL,
                     {
-                        //filenameListF.add(fwm.getName());
-                        //captionListF.add(captionListM.get(cap_index).toString());
-                        //dateListF.add(dateListM.get(cap_index).toString());
+                        filenameListF.add(fwm.getName());
+                        captionListF.add(captionListM.get(cap_index).toString());
+                        dateListF.add(dateListM.get(cap_index).toString());
 
                     }
 

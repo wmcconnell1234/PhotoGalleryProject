@@ -27,7 +27,7 @@ public class UtilTest
         //Given the caption file has not been created yet...
 
         //...When I call Utils.GetFile() with "captions"...
-        Utils2.Utils2 U = new Utils2.Utils2();
+        Utils2 U = new Utils2();
         String s = "captions";
         Context c = getApplicationContext();
         File f = null;
@@ -50,7 +50,7 @@ public class UtilTest
         } catch (IOException e) {}
 
         //...When I call Utils.GetFile()...
-        Utils2.Utils2 U = new Utils2.Utils2();
+        Utils2 U = new Utils2();
         f = null;
         f = U.GetFile(c, "captions");
 
@@ -80,7 +80,7 @@ public class UtilTest
         } catch (IOException e) {}
 
         //...When I call Utils.PopulateList...
-        Utils2.Utils2 U = new Utils2.Utils2();
+        Utils2 U = new Utils2();
         List result;
         result = U.PopulateList(captionFile);
 
@@ -105,7 +105,7 @@ public class UtilTest
         } catch (IOException e) {}
 
         //...When I call Utils.SaveToFile() with "captions"...
-        Utils2.Utils2 U = new Utils2.Utils2();
+        Utils2 U = new Utils2();
         U.SaveToFile(c, captionList, "captions"); //deletes the file and creates a new one.
 
         //...Did it save the caption list to the file?
@@ -140,7 +140,7 @@ public class UtilTest
         List l2 = new ArrayList();
 
         //...When I call Utils.copy...
-        Utils2.Utils2 U = new Utils2.Utils2();
+        Utils2 U = new Utils2();
         l2 = U.copy(l1);
 
         //...Did it make a true copy of the list?

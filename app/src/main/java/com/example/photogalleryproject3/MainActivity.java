@@ -44,8 +44,13 @@ import java.util.Date;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import DeleteUtil.DeleteUtil;
+import FolderUtil.FolderUtil;
 import Utils2.*; //Utility class containing helpful functions for Photo Gallery app
 import SearchUtil.*; //Utility class containing search function for Photo Gallery app
+import DeleteUtil.*;
+import FolderUtil.*;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -78,6 +83,8 @@ public class MainActivity extends AppCompatActivity
     //Instantiate the utility classes that provide helpful functions for this app
     private Utils2 U = new Utils2();
     private SearchUtil S = new SearchUtil();
+    private DeleteUtil D = new DeleteUtil();
+    private FolderUtil F = new FolderUtil();
     //============================================================================================================================
 
     private void displayPhoto(String path) {
@@ -94,6 +101,7 @@ public class MainActivity extends AppCompatActivity
         if (fList != null) {
             for (File f : file.listFiles()) {
                 fl.add(f.getName());
+                //f.delete();
             }
         }
         return fl;   // this is our filenamelist from before
@@ -261,50 +269,14 @@ public class MainActivity extends AppCompatActivity
         //Do this if user pressed "Folders" to view a folder
         if (requestCode == VIEW_FOLDER_REQUEST_CODE && resultCode == RESULT_OK)
         {
-            //If the folder that was chosen is "All" then just clear the filters
-            String folderName = data.getStringExtra("FOLDER");
-            if(folderName.equals("All"))
-            {
-                filenameListF = U.copy(filenameListM);
-                captionListF = U.copy(captionListM);
-                dateListF = U.copy(dateListM);
-            }
-            else
-            {
-                //Navigate to the folder that was chosen
-                String folderNameRead = "null";
-                int index;
-                for (index = 0; index < folderList.size() && !folderNameRead.equals(folderName); index++)
-                    folderNameRead = ((ArrayList) folderList.get(index)).get(0).toString();
-                index--; //I assume there is at least one folder.
-                List currentFolder = new ArrayList();
-                currentFolder = (ArrayList) folderList.get(index);
-
-                //Set filtered lists to the files in that folder
-                filenameListF.clear();
-                captionListF.clear();
-                dateListF.clear();
-                for (int i = 1; i < currentFolder.size(); i++) {
-                    //Filename
-                    String filename = currentFolder.get(i).toString();
-                    filenameListF.add(filename);
-
-                    //Preparatory work for date and caption (determine current file index in master lists)
-                    String fileNameRead = "null";
-                    int fileIndex;
-                    for (fileIndex = 0; fileIndex < filenameListM.size() && !fileNameRead.equals(filename); fileIndex++)
-                        fileNameRead = filenameListM.get(fileIndex).toString();
-                    fileIndex--;
-
-                    //Caption
-                    String caption = captionListM.get(fileIndex).toString();
-                    captionListF.add(caption);
-
-                    //Date
-                    String date = dateListM.get(fileIndex).toString();
-                    dateListF.add(date);
-                }
-            }//end else
+            //This is a hideous function call but it is required to be able to write a unit test for it.
+            List result = new ArrayList();
+            result = F.ViewFolder(data, filenameListF, captionListF, dateListF,
+                    filenameListM, captionListM, dateListM, U, folderList);
+            //Unpack result
+            filenameListF = (List) result.get(0);
+            captionListF = (List) result.get(1);
+            dateListF = (List) result.get(2);
 
             //Go to the first picture, if any, in that folder
             if(filenameListF.size() > 0)
@@ -402,66 +374,26 @@ public class MainActivity extends AppCompatActivity
 
     public void Delete(View view)
     {
-        //Only delete if there's at least one picture
-        if(filenameListF.size() > 0)
+        //This is a hideous function call but it is required to be able to write a unit test for it.
+        D.Delete(MainActivity.this, filenameListF, folderList, currentElement, filenameListM,
+                captionListF, captionListM, dateListF, dateListM, U);
+
+        //10. Go to a different picture, or a blank screen if no pictures left
+        if (filenameListF.size() == 0)
         {
-            //0. Delete current picture from all folders that it's in
-            for(int i = 0; i < folderList.size(); i++)
-            {
-                int size = ((ArrayList)folderList.get(i)).size();
-                for(int j = 1; j < size; j++)
-                {
-                    if(((ArrayList)folderList.get(i)).get(j).toString().equals(filenameListF.get(currentElement).toString()))
-                    {
-                        ((ArrayList) folderList.get(i)).remove(j);
-                        size--;
-                        j--;
-                    }
-                }
-            }
-            //1. Delete current picture from the file system
-            File f = new File(
-                    getExternalFilesDir(Environment.DIRECTORY_PICTURES) + "/" + filenameListF.get(currentElement).toString());
-            f.delete();
-            //2. Delete current picture from master filename list
-            String s = filenameListF.get(currentElement).toString();
-            int i = filenameListM.indexOf(s);
-            filenameListM.remove(i);
-            //3. Delete current picture from master caption list
-            s = captionListF.get(currentElement).toString();
-            i = captionListM.indexOf(s);
-            captionListM.remove(i);
-            //4. Delete current picture from master date list
-            s = dateListF.get(currentElement).toString();
-            i = dateListM.indexOf(s);
-            dateListM.remove(i);
-            //5. Delete current picture from filtered filename list
-            filenameListF.remove(currentElement);
-            //6. Delete current picture from filtered caption list
-            captionListF.remove(currentElement);
-            //7. Delete current picture from filtered date list
-            dateListF.remove(currentElement);
-            //8. Delete current picture from the caption file
-            U.SaveToFile(MainActivity.this, captionListM, "captions");
-            //9. Delete current picture from the date file
-            U.SaveToFile(MainActivity.this, dateListM, "dates");
-            //10. Go to a different picture, or a blank screen if no pictures left
-            if (filenameListF.size() == 0)
-            {
-                //Don't worry about currentElement, it will get set correctly when a picture is taken.
-                Go(BLANK_SCREEN);
-            }
-            else if (currentElement >= filenameListF.size())
-            {
-                currentElement--;
-                Go(currentElement);
-            }
-            else
-            {
-                //currentElement is in bounds so leave it as is
-                Go(currentElement);
-            }
-        }//end if
+            //Don't worry about currentElement, it will get set correctly when a picture is taken.
+            Go(BLANK_SCREEN);
+        }
+        else if (currentElement >= filenameListF.size())
+        {
+            currentElement--;
+            Go(currentElement);
+        }
+        else
+        {
+            //currentElement is in bounds so leave it as is
+            Go(currentElement);
+        }
     }//end Delete
     //============================================================================================================================
 
