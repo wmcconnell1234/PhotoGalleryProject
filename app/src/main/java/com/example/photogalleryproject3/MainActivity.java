@@ -8,10 +8,14 @@
 
 package com.example.photogalleryproject3;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -49,13 +53,25 @@ import DeleteUtil.DeleteUtil;
 import FolderUtil.FolderUtil;
 import Utils2.*; //Utility class containing helpful functions for Photo Gallery app
 import SearchUtil.*; //Utility class containing search function for Photo Gallery app
+import com.google.android.gms.vision.barcode.Barcode;
+
 import DeleteUtil.*;
 import FolderUtil.*;
 
+// for QR scanning, dw why we need it, may delete this if not used. IL
+import android.graphics.drawable.BitmapDrawable;
+// for QR
+import com.google.android.gms.vision.barcode.Barcode;
+import com.google.android.gms.vision.barcode.BarcodeDetector;
+
 public class MainActivity extends AppCompatActivity
 {
+    Button scanbtn;
+    TextView result;
     private static final String AndroidUploadServletURL = "http://192.168.1.72:8082/AndroidUploadServlet/upload";
     private HttpURLConnection urlConnection;
+    public static final int REQUEST_CODE = 100;
+    public static final int PERMISSION_REQUEST = 200;
     public static final int REQUEST_IMAGE_CAPTURE = 1;
     public static final int SEARCH_ACTIVITY_REQUEST_CODE = 0;
     public static final int VIEW_FOLDER_REQUEST_CODE = 2;
@@ -119,6 +135,18 @@ public class MainActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        scanbtn = (Button) findViewById(R.id.scanbtn);
+        result = (TextView) findViewById(R.id.result);
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST);
+        }
+        scanbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, ScanActivity.class);
+                startActivityForResult(intent, REQUEST_CODE);
+            }
+        });
         //On first run, create files to save captions and dates. Also get the filenames.
         File captionFile = U.GetFile(MainActivity.this, "captions");
         File dateFile = U.GetFile(MainActivity.this, "dates");
@@ -149,6 +177,8 @@ public class MainActivity extends AppCompatActivity
         folderList.add(temp1); //Folder 1
         folderList.add(temp2); //Folder 2
         folderList.add(temp3); //Folder 3
+
+
     }
     //============================================================================================================================
 
@@ -196,6 +226,17 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
+        if(requestCode == REQUEST_CODE && resultCode == RESULT_OK){
+            if(data != null){
+                final Barcode barcode = data.getParcelableExtra("barcode");
+                result.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        result.setText(barcode.displayValue);
+                    }
+                });
+            }
+        }
         //Do this if user took a picture
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK)
         {
@@ -736,6 +777,8 @@ public class MainActivity extends AppCompatActivity
         return rotatedBitmap;
     }
 
+
+    // ------------------------QR scanning, the function when the button is pressed ----------- IL
 
 
 
