@@ -549,17 +549,21 @@ public class MainActivity extends AppCompatActivity
     //Upload the image to tomcat server
     public void Upload(View view)
     {
-        //Disable upload button until upload complete (server can currently only handle one upload at a time)
-        Button button = findViewById(R.id.btnUpload);
-        button.setClickable(false);
-        //Update status
-        TextView textViewUpload = (TextView) findViewById(R.id.textViewUpload);
-        textViewUpload.setText("Upload in progress");
-        //Start upload task
-        String filename;
-        filename = getExternalFilesDir(Environment.DIRECTORY_PICTURES) + "/" + filenameListF.get(currentElement).toString();
-        UploadTask uploadTask = new UploadTask();
-        uploadTask.execute(AndroidUploadServletURL, filename);
+        //Only if there is a current picture!
+        if(mCurrentPhotoPath != null)
+        {
+            //Disable upload button until upload complete (server can currently only handle one upload at a time)
+            Button button = findViewById(R.id.btnUpload);
+            button.setClickable(false);
+            //Update status
+            TextView textViewUpload = (TextView) findViewById(R.id.textViewUpload);
+            textViewUpload.setText("Upload in progress");
+            //Start upload task
+            String filename;
+            filename = getExternalFilesDir(Environment.DIRECTORY_PICTURES) + "/" + filenameListF.get(currentElement).toString();
+            UploadTask uploadTask = new UploadTask();
+            uploadTask.execute(AndroidUploadServletURL, filename);
+        }
     }
 
     private class UploadTask extends AsyncTask<String, Void, String>
