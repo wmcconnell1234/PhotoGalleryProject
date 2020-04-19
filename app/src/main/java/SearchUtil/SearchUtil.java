@@ -34,6 +34,8 @@ public class SearchUtil
         float flng1 ;
         float flng2 ;
 
+        int flagWM = 0; //WM - adding flag to detect incorrect date format
+
         //if one or both dates were left empty, set the search criteria for date so that all image dates are accepted
         if (returnStartTime.isEmpty() || returnEndTime.isEmpty())
         {
@@ -50,11 +52,36 @@ public class SearchUtil
         ////////////////////////////////////////////////////////////////////////
         ////////     the user input the date in a simple format that can't be compared with the format of the list
         ////          so we get the "simple format" string,
-        else {
+
+        else
+        {
             dStartTime = sdfUser.parse(returnStartTime, parsepos);
             parsepos.setIndex(0);
-            dEndTime = sdfUser.parse(returnEndTime, parsepos);
+            if(dStartTime == null) //WM
+            {
+                dEndTime = new Date(); //Make the compiler happy
+                flagWM = 1;        //WM
+            }
+            else
+            {
+                dEndTime = sdfUser.parse(returnEndTime, parsepos);
+                parsepos.setIndex(0);
+                if(dEndTime == null) //WM
+                    flagWM = 1;        //WM
+            }
+        }
+        //adding WM:
+        //if one or both dates were in the wrong format, set the search criteria for date so that all image dates are accepted
+        if (flagWM == 1)
+        {
+            String minDate = "00010101_000000";
+            String maxDate = "20500505_000000";
+            Date minDateD = sdfUser.parse(minDate,parsepos);
             parsepos.setIndex(0);
+            Date maxDateD = sdfUser.parse(maxDate,parsepos);
+            parsepos.setIndex(0);
+            dStartTime = minDateD;
+            dEndTime = maxDateD;
         }
 
         //if any of geo location were left empty, set the search criteria for geo location so that all image dates are accepted. IL

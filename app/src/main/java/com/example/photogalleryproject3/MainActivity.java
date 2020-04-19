@@ -523,25 +523,28 @@ public class MainActivity extends AppCompatActivity
     //Share the image
     public void Share(View view)
     {
-        File file = new File(Environment.getExternalStorageDirectory()
-                .getAbsolutePath(), "/Android/data/com.example.photogalleryproject3/files/Pictures"); // put in our project name then it should work
+        //added WM: Only if there is a current picture!!
+        if(mCurrentPhotoPath != null)
+        {
+            File file = new File(Environment.getExternalStorageDirectory()
+                    .getAbsolutePath(), "/Android/data/com.example.photogalleryproject3/files/Pictures"); // put in our project name then it should work
 
-        String photoname = "/storage/emulated/0/Android/data/com.example.photogalleryproject3/files/Pictures/" + filenameListF.get(currentElement).toString();
+            String photoname = "/storage/emulated/0/Android/data/com.example.photogalleryproject3/files/Pictures/" + filenameListF.get(currentElement).toString();
 
-        Uri share_photoURI = Uri.parse(photoname);
+            Uri share_photoURI = Uri.parse(photoname);
 
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
 
-        //shareIntent.putExtra(Intent.EXTRA_TEXT, ((EditText) findViewById(R.id.etCaption)).getText().toString());
-        //.putExtra(Intent.EXTRA_SUBJECT, "" + ((EditText) findViewById(R.id.etCaption)).getText().toString());
-        //File file = new File(photos.get(index));
-        shareIntent.putExtra(Intent.EXTRA_STREAM, share_photoURI);
-        shareIntent.setType("image/*");
-        shareIntent.setPackage("com.facebook.katana");
-        //shareIntent.setPackage("com.discord");
-        startActivity(Intent.createChooser(shareIntent, "Share image to..."));
+            //shareIntent.putExtra(Intent.EXTRA_TEXT, ((EditText) findViewById(R.id.etCaption)).getText().toString());
+            //.putExtra(Intent.EXTRA_SUBJECT, "" + ((EditText) findViewById(R.id.etCaption)).getText().toString());
+            //File file = new File(photos.get(index));
+            shareIntent.putExtra(Intent.EXTRA_STREAM, share_photoURI);
+            shareIntent.setType("image/*");
+            shareIntent.setPackage("com.facebook.katana");
+            //shareIntent.setPackage("com.discord");
+            startActivity(Intent.createChooser(shareIntent, "Share image to..."));
 
-
+        }
     }
 
     //============================================================================================================================

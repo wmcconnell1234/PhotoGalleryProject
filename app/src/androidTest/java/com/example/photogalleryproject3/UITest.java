@@ -163,12 +163,14 @@ public class UITest
         onView(withId(R.id.search_toLongitude)).perform(typeText("-124.000000"), closeSoftKeyboard());
         //In the search window Press Search to go back to main activity
         onView(withId(R.id.button)).perform(click());
+
         // I can't verify the result because pictures on my specific phone has no location information, no matter what I tried.
         // I enabled "save location" already
-        /*
-        Verify that there is a result
+
+        //Uncommented WM - works on my phone
+        //Verify that there is a result
         onView(withId(R.id.editTextCaption)).check(matches(withText("Caption1")));
-        */
+
 
         try{Thread.sleep(1000);}catch(Exception e){}
 
@@ -188,6 +190,11 @@ public class UITest
 
         try{Thread.sleep(1000);}catch(Exception e){}
 
+        //Added WM - Verify that there is a result
+        onView(withId(R.id.editTextCaption)).check(matches(withText("Caption1")));
+        onView(withId(R.id.buttonLeft)).perform(click());
+        onView(withId(R.id.editTextCaption)).check(matches(withText("Caption2")));
+
         //to Test InValid Equivalence Class: TopLeft.Lat < BottomRight.Lat; or TopLeft.Long > BottomRight.Long
         //Press Search
         onView(withId(R.id.btnSnap2)).perform(click());
@@ -201,6 +208,9 @@ public class UITest
         onView(withId(R.id.search_toLongitude)).perform(typeText("-124.000000"), closeSoftKeyboard());
         //In the search window Press Search to go back to main activity
         onView(withId(R.id.button)).perform(click());
+
+        //Added WM - Verify that there is no result
+        onView(withId(R.id.editTextCaption)).check(matches(withText("No files found")));
 
         try{Thread.sleep(1000);}catch(Exception e){}
 
@@ -216,9 +226,9 @@ public class UITest
         //Press Search
         onView(withId(R.id.btnSnap2)).perform(click());
         //In the Time search window Enter the desire search for StartDate in  yyyyMMdd_hhmmss format
-        onView(withId(R.id.search_fromDate)).perform(typeText("20200418_150000"), closeSoftKeyboard());
+        onView(withId(R.id.search_fromDate)).perform(typeText("20200418_170450"), closeSoftKeyboard());
         //In the location search window Enter the desire search for lower bound latitude
-        onView(withId(R.id.search_toDate)).perform(typeText("20200418_153705"), closeSoftKeyboard());
+        onView(withId(R.id.search_toDate)).perform(typeText("20200418_172413"), closeSoftKeyboard());
 
         //In the search window Press Search to go back to main activity
         onView(withId(R.id.button)).perform(click());
@@ -368,6 +378,7 @@ public class UITest
 
     }
 
+
     @Test
     public void zTestDelete() //tests run in alphabetical order, and this one must be last
     {
@@ -382,4 +393,6 @@ public class UITest
         onView(withId(R.id.editTextCaption)).check(matches(withText("No files found")));
         try{Thread.sleep(2000);}catch(Exception e){}
     }
+
+
 }
